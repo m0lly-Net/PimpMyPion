@@ -749,7 +749,7 @@
                 const menuOption = document.createElement('li');
                 menuOption.id = 'avatar-resize-menu-option';
                 menuOption.className = 'link couleur2';
-                menuOption.innerHTML = '🎀 PmP';
+                menuOption.innerHTML = '🎀 PmP v 0.3';
                 menuOption.style.cursor = 'pointer';
 
                 // Événement : Ouvrir le panneau de configuration
@@ -778,7 +778,7 @@
     }
 
     // ============================================================
-    // FONCTION : Observer les changements du DOM (VERSION ULTRA-RÉACTIVE)
+    // FONCTION : Observer les changements du DOM (VERSION RACTIVE)
     // ============================================================
     function observeMapChanges() {
         // Observer les changements dans la zone de la carte
@@ -792,7 +792,7 @@
                 const currentSize = loadAvatarSize();
                 applyAvatarSize(currentSize);
 
-                // Réapplication immédiate et synchrone (sans await) pour être ultra-rapide
+                // Réapplication immédiate et synchrone (sans await) pour être + rapide
                 mutations.forEach(mutation => {
                     // Nouveaux nœuds ajoutés
                     mutation.addedNodes.forEach(node => {
@@ -845,7 +845,7 @@
         // 2. Ajouter l'option dans le menu Paramètres
         addMenuOption();
 
-        // 3. Observer les changements de la carte (version ultra-réactive)
+        // 3. Observer les changements de la carte (version réactive)
         observeMapChanges();
 
         // 4. Appliquer les avatars personnalisés au chargement
@@ -853,7 +853,7 @@
             debugLog('🖼️ Application des avatars personnalisés au chargement...');
             applyAvatarsToAllPions(true); // true = forcer la première application
 
-            // 5. Démarrer le système de réapplication ULTRA-RAPIDE (50ms + RAF)
+            // 5. Démarrer le système de réapplication RAPIDE (50ms + RAF)
             if (loadAvatarEnabled()) {
                 startPeriodicReapplication();
             }
