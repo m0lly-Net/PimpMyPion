@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dreadcast - PimpMyPion
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.3.1
 // @description  Ajoute un slider pour contrôler la taille des pions + affiche les avatars personnalisés des joueurs
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -229,13 +229,17 @@
                 }
             }
 
-            // Style ULTRA-RENFORCÉ pour rendre l'avatar circulaire et TOUJOURS visible
+            // Détecter si le joueur est connecté (classe .connecte sur .le_icon_perso)
+            const isConnected = iconElement.classList.contains('connecte');
+            const borderColor = isConnected ? '#4ade80' : '#9ca3af'; // Vert si connecté, gris sinon
+
+            // Style renforcé pour rendre l'avatar circulaire et TOUJOURS visible
             // Utilisation de setProperty avec priority 'important' pour forcer les styles
             avatarImg.style.setProperty('width', '100%', 'important');
             avatarImg.style.setProperty('height', '100%', 'important');
             avatarImg.style.setProperty('object-fit', 'cover', 'important');
             avatarImg.style.setProperty('border-radius', '50%', 'important');
-            avatarImg.style.setProperty('border', '2px solid rgba(255, 255, 255, 0.8)', 'important');
+            avatarImg.style.setProperty('border', `3px solid ${borderColor}`, 'important');
             avatarImg.style.setProperty('box-shadow', '0 2px 8px rgba(0, 0, 0, 0.3)', 'important');
             avatarImg.style.setProperty('position', 'absolute', 'important');
             avatarImg.style.setProperty('top', '0', 'important');
@@ -749,7 +753,7 @@
                 const menuOption = document.createElement('li');
                 menuOption.id = 'avatar-resize-menu-option';
                 menuOption.className = 'link couleur2';
-                menuOption.innerHTML = '🎀 PmP v 0.3';
+                menuOption.innerHTML = '🎀 PmP v 0.3.1';
                 menuOption.style.cursor = 'pointer';
 
                 // Événement : Ouvrir le panneau de configuration
