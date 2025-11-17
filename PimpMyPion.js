@@ -19,12 +19,12 @@
     const CONFIG = {
         storageKey: 'dreadcast_avatar_size',
         avatarEnabledKey: 'dreadcast_avatar_enabled',
-        defaultSize: 100, // Taille par défaut en pourcentage (100% = taille normale)
+        defaultSize: 75, // Taille par défaut en pourcentage (100% = taille normale)
         minSize: 50,      // Taille minimale en pourcentage
         maxSize: 200,     // Taille maximale en pourcentage
         avatarBaseUrl: 'https://www.dreadcast.net/images/avatars/',
-        reapplyInterval: 50, // RÉDUIT DE 500ms à 50ms pour une meilleure réactivité - évite les clignotements visibles
-        debugMode: true // Activer les logs de débogage
+        reapplyInterval: 50, // 50ms pour une meilleure réactivité - évite les clignotements visibles
+        debugMode: false // Activer les logs de débogage
     };
 
     // Cache pour optimiser les performances
@@ -498,7 +498,7 @@
             <div class="dataBox" style="position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 1000000 !important; width: 500px !important; background: #ffffff !important; border-radius: 12px !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; display: block !important; visibility: visible !important; opacity: 1 !important; overflow: hidden !important;">
                 <relative>
                     <div class="head" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; padding: 20px !important; cursor: move !important; position: relative !important;">
-                        <div class="title" style="color: #ffffff !important; font-size: 18px !important; font-weight: 600 !important; text-align: center !important; margin: 0 !important;">⚡ Configuration des Avatars (v2.2)</div>
+                        <div class="title" style="color: #ffffff !important; font-size: 18px !important; font-weight: 600 !important; text-align: center !important; margin: 0 !important;">🎀 PmP</div>
                         <div title="Fermer" class="close" id="avatar-close-btn" style="position: absolute !important; top: 15px !important; right: 15px !important; color: #ffffff !important; cursor: pointer !important; font-size: 24px !important; line-height: 24px !important; width: 32px !important; height: 32px !important; text-align: center !important; background: rgba(255, 255, 255, 0.2) !important; border-radius: 6px !important; transition: all 0.3s ease !important; display: flex !important; align-items: center !important; justify-content: center !important;">✕</div>
                     </div>
                     <div class="content" style="padding: 30px !important; background: #ffffff !important;">
@@ -564,16 +564,6 @@
                             </style>
                         </div>
 
-                        <!-- Informations -->
-                        <div style="margin-top: 25px !important; padding: 18px !important; background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%) !important; border-left: 4px solid #ff9800 !important; border-radius: 8px !important; font-size: 13px !important; color: #4a5568 !important; line-height: 1.6 !important;">
-                            <strong style="color: #e65100 !important; display: block !important; margin-bottom: 8px !important;">⚡ NOUVEAU dans v2.2 - ANTI-CLIGNOTEMENT :</strong>
-                            • Intervalle réduit de 500ms → <strong>50ms</strong> (10x plus rapide !)<br>
-                            • <strong>requestAnimationFrame</strong> pour synchronisation parfaite avec le navigateur<br>
-                            • Approche hybride : setInterval + RAF pour éliminer le clignotement<br>
-                            • Cache d'URL d'avatars pour performances maximales<br>
-                            • Styles CSS ultra-renforcés avec z-index: 999<br>
-                            • Application synchrone pour réactivité instantanée
-                        </div>
 
                         <!-- Boutons -->
                         <div style="margin-top: 25px !important; text-align: center !important; display: flex !important; gap: 10px !important; justify-content: center !important;">
@@ -759,7 +749,7 @@
                 const menuOption = document.createElement('li');
                 menuOption.id = 'avatar-resize-menu-option';
                 menuOption.className = 'link couleur2';
-                menuOption.innerHTML = '⚡ Configuration Avatars (v2.2)';
+                menuOption.innerHTML = '🎀 PmP';
                 menuOption.style.cursor = 'pointer';
 
                 // Événement : Ouvrir le panneau de configuration
