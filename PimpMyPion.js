@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dreadcast - PimpMyPion
 // @namespace    http://tampermonkey.net/
-// @version      0.4.2
+// @version      0.4.3
 // @description  Ajoute un slider pour contrôler la taille des pions + affiche les avatars personnalisés des joueurs
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -718,7 +718,7 @@
           const menuOption = document.createElement('li');
           menuOption.id = 'avatar-resize-menu-option';
           menuOption.className = 'link couleur2';
-          menuOption.textContent = '🎀 PmP v0.4.2';
+          menuOption.textContent = '🎀 PmP v0.4.3';
           menuOption.style.cursor = 'pointer';
 
           menuOption.addEventListener('click', (e) => {
