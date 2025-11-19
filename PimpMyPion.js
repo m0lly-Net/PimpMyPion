@@ -235,15 +235,16 @@
 
     applyAvatarStyles(avatarImg, borderColor) {
       const styles = {
-        width: '100%',
-        height: '100%',
+        width: '70px',
+        height: '70px',
         'object-fit': 'cover',
         'border-radius': '50%',
         border: `3px solid ${borderColor}`,
         'box-shadow': '0 2px 8px rgba(0, 0, 0, 0.3)',
         position: 'absolute',
-        top: '0',
-        left: '0',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
         'z-index': String(CONFIG.Z_INDEX_AVATAR),
         'pointer-events': 'none',
         display: 'block',
@@ -443,22 +444,22 @@
 
         .${CONFIG.CLASS_AVATAR_IMG} {
           pointer-events: none !important;
-          width: 100% !important;
-          height: 100% !important;
+          width: 70px !important;
+          height: 70px !important;
           object-fit: cover !important;
           border-radius: 50% !important;
           border: 2px solid rgba(255, 255, 255, 0.8) !important;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
           position: absolute !important;
-          top: 0 !important;
-          left: 0 !important;
+          top: 50% !important;
+          left: 50% !important;
+          transform: translate(-50%, -50%) !important;
           z-index: ${CONFIG.Z_INDEX_AVATAR} !important;
           display: block !important;
           visibility: visible !important;
           opacity: 1 !important;
           transition: none !important;
           animation: none !important;
-          transform: none !important;
         }
 
         .personnages .icon_perso .le_icon_perso > * {
