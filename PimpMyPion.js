@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dreadcast - PimpMyPion
 // @namespace    http://tampermonkey.net/
-// @version      0.4.0
+// @version      0.4.1
 // @description  Ajoute un slider pour contrôler la taille des pions + affiche les avatars personnalisés des joueurs
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -14,22 +14,22 @@
   'use strict';
 
   // ============================================================
-  // CONFIGURATION & CONSTANTS
+  // CONFIGURATION 
   // ============================================================
   const CONFIG = Object.freeze({
-    // Storage keys
+    // Clefs stockage
     STORAGE_KEY_SIZE: 'dreadcast_avatar_size',
     STORAGE_KEY_ENABLED: 'dreadcast_avatar_enabled',
 
-    // Size settings (percentage)
+    // Paramètres de taille(en %)
     DEFAULT_SIZE: 75,
     MIN_SIZE: 50,
     MAX_SIZE: 200,
 
-    // URLs & paths
+    // URLs & chemins
     AVATAR_BASE_URL: 'https://www.dreadcast.net/images/avatars/',
 
-    // Timing (milliseconds)
+    // Timing (millisecondes)
     REAPPLY_INTERVAL: 50,
     RAF_THROTTLE: 16, // ~60 FPS
     INIT_DELAY: 2000,
@@ -43,13 +43,13 @@
     Z_INDEX_OVERLAY: 999999,
     Z_INDEX_PANEL: 1000000,
 
-    // CSS selectors
+    // Selecteurs CSS
     SELECTOR_PIONS: '.personnages .icon_perso',
     SELECTOR_ICON: '.le_icon_perso',
     SELECTOR_INFO: '.info_a_afficher',
     SELECTOR_SETTINGS_MENU: '.parametres ul',
 
-    // CSS classes
+    // Classes CSS
     CLASS_AVATAR_IMG: 'custom-avatar-img',
     CLASS_CONNECTED: 'connecte',
 
@@ -57,20 +57,20 @@
     ATTR_AVATAR_STATUS: 'data-avatar-applied',
     ATTR_PLAYER_NAME: 'data-player-name',
 
-    // Avatar status
+    // Status avatars
     STATUS_SUCCESS: 'success',
     STATUS_FAILED: 'failed',
 
-    // Colors
+    // Couleurs
     COLOR_CONNECTED: '#4ade80',
     COLOR_DISCONNECTED: '#9ca3af',
 
-    // Misc
+    // Divers
     DEBUG_MODE: false
   });
 
   // ============================================================
-  // STATE MANAGEMENT
+  // Gestion des état
   // ============================================================
   class AvatarState {
     constructor() {
@@ -101,7 +101,7 @@
   const state = new AvatarState();
 
   // ============================================================
-  // UTILITY FUNCTIONS
+  // Fonctions utilitaires 
   // ============================================================
   const Utils = {
     debugLog(message, ...args) {
@@ -109,7 +109,7 @@
         console.log(`[Dreadcast PimpMyPion] ${message}`, ...args);
       }
     },
-
+    
     encodePlayerName(name) {
       return encodeURIComponent(name);
     },
@@ -130,7 +130,7 @@
   };
 
   // ============================================================
-  // STORAGE FUNCTIONS
+  // Fonctions de stockage
   // ============================================================
   const Storage = {
     loadAvatarSize() {
@@ -196,7 +196,7 @@
   };
 
   // ============================================================
-  // IMAGE LOADING
+  // Chargement des images
   // ============================================================
   const ImageLoader = {
     async checkImageExists(url, playerName) {
@@ -220,7 +220,7 @@
   };
 
   // ============================================================
-  // AVATAR STYLING
+  // Style des avatars
   // ============================================================
   const AvatarStyler = {
     createAvatarImage(avatarUrl, playerName) {
@@ -266,7 +266,7 @@
   };
 
   // ============================================================
-  // AVATAR APPLICATION
+  // Application des avatars
   // ============================================================
   const AvatarManager = {
     async applyCustomAvatar(pionElement, force = false) {
@@ -372,7 +372,8 @@
   };
 
   // ============================================================
-  // REAPPLICATION SYSTEM
+  // Système de Réapplication rapide (réapplique les avatar quand DOM change -quand on bouge en jeu par exemple-)
+  // Version rapide --> 60FPS, pour éviter au max de voir le "clignotement" des pions)
   // ============================================================
   const ReapplicationSystem = {
     ultraFastReapplication() {
@@ -412,7 +413,7 @@
   };
 
   // ============================================================
-  // SIZING SYSTEM
+  // Systeme de taille & styles
   // ============================================================
   const SizingSystem = {
     applyAvatarSize(size) {
@@ -477,7 +478,7 @@
   };
 
   // ============================================================
-  // UI COMPONENTS
+  // Composants UI 
   // ============================================================
   const UIComponents = {
     createDraggableBehavior(element, handle) {
@@ -686,7 +687,7 @@
   };
 
   // ============================================================
-  // MENU INTEGRATION
+  // Intégration du menu
   // ============================================================
   const MenuIntegration = {
     addMenuOption() {
@@ -701,7 +702,7 @@
           const menuOption = document.createElement('li');
           menuOption.id = 'avatar-resize-menu-option';
           menuOption.className = 'link couleur2';
-          menuOption.textContent = '🎀 PmP v0.4.0';
+          menuOption.textContent = '🎀 PmP v0.4.1';
           menuOption.style.cursor = 'pointer';
 
           menuOption.addEventListener('click', (e) => {
@@ -775,7 +776,7 @@
   };
 
   // ============================================================
-  // INITIALIZATION
+  // Initialisation
   // ============================================================
   function init() {
     Utils.debugLog('⚡ PimpMyPion - Initialisation');
@@ -802,7 +803,7 @@
     }, CONFIG.SECONDARY_DELAY);
   }
 
-  // Start initialization
+  // Démarrer initialization
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
