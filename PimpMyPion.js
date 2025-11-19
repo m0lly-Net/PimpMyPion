@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dreadcast - PimpMyPion
 // @namespace    http://tampermonkey.net/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Ajoute un slider pour contrôler la taille des pions + affiche les avatars personnalisés des joueurs
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -14,7 +14,7 @@
   'use strict';
 
   // ============================================================
-  // CONFIGURATION 
+  // CONFIGURATION
   // ============================================================
   const CONFIG = Object.freeze({
     // Clefs stockage
@@ -101,7 +101,7 @@
   const state = new AvatarState();
 
   // ============================================================
-  // Fonctions utilitaires 
+  // Fonctions utilitaires
   // ============================================================
   const Utils = {
     debugLog(message, ...args) {
@@ -109,7 +109,7 @@
         console.log(`[Dreadcast PimpMyPion] ${message}`, ...args);
       }
     },
-    
+
     encodePlayerName(name) {
       return encodeURIComponent(name);
     },
@@ -478,14 +478,25 @@
   };
 
   // ============================================================
-  // Composants UI 
+  // Composants UI
   // ============================================================
   const UIComponents = {
     createDraggableBehavior(element, handle) {
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      let isDragging = false;
 
       handle.onmousedown = (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
+        isDragging = true;
+
+        // Désactiver le transform et fixer les positions AVANT de commencer le drag
+        const rect = element.getBoundingClientRect();
+        element.style.transform = 'none';
+        element.style.top = `${rect.top}px`;
+        element.style.left = `${rect.left}px`;
+
         pos3 = e.clientX;
         pos4 = e.clientY;
         document.onmouseup = closeDrag;
@@ -500,10 +511,14 @@
         pos4 = e.clientY;
         element.style.top = `${element.offsetTop - pos2}px`;
         element.style.left = `${element.offsetLeft - pos1}px`;
-        element.style.transform = 'none';
       }
 
-      function closeDrag() {
+      function closeDrag(e) {
+        // Empêcher la propagation du mouseup vers l'overlay
+        if (e) {
+          e.stopPropagation();
+        }
+        isDragging = false;
         document.onmouseup = null;
         document.onmousemove = null;
       }
@@ -702,7 +717,7 @@
           const menuOption = document.createElement('li');
           menuOption.id = 'avatar-resize-menu-option';
           menuOption.className = 'link couleur2';
-          menuOption.textContent = '🎀 PmP v0.4.1';
+          menuOption.textContent = '🎀 PmP v0.4.2';
           menuOption.style.cursor = 'pointer';
 
           menuOption.addEventListener('click', (e) => {
