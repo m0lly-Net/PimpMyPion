@@ -8,6 +8,8 @@
 // @match        http://www.dreadcast.net/*
 // @grant        none
 // @run-at       document-end
+// @downloadURL https://update.greasyfork.org/scripts/556113/Dreadcast%20-%20PimpMyPion.user.js
+// @updateURL https://update.greasyfork.org/scripts/556113/Dreadcast%20-%20PimpMyPion.meta.js
 // ==/UserScript==
 
 (function () {
@@ -22,7 +24,7 @@
     STORAGE_KEY_ENABLED: 'dreadcast_avatar_enabled',
 
     // Paramètres de taille(en %)
-    DEFAULT_SIZE: 75,
+    DEFAULT_SIZE: 50,
     MIN_SIZE: 50,
     MAX_SIZE: 200,
 
@@ -235,8 +237,8 @@
 
     applyAvatarStyles(avatarImg, borderColor) {
       const styles = {
-        width: '70px',
-        height: '70px',
+        width: '40px',
+        height: '40px',
         'object-fit': 'cover',
         'border-radius': '50%',
         border: `3px solid ${borderColor}`,
