@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Dreadcast - PimpMyPion - Testing v 0.5.4
+// @name         Dreadcast - PimpMyPion - Testing v 0.5.5
 // @namespace    http://tampermonkey.net/
-// @version      0.5.4
-// @description  Remplace les pions bleus par les avatars des joueurs et ajoute des paramètres de personnalisation 
+// @version      0.5.5
+// @description  Remplace les pions bleus par les avatars des joueurs et ajoute des paramètres de personnalisation
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
 // @match        http://www.dreadcast.net/*
@@ -93,7 +93,7 @@
       PANEL: 1000000
     }),
 
-    // Sélecteurs CSS 
+    // Sélecteurs CSS
     SELECTORS: Object.freeze({
       PIONS: '.personnages .icon_perso',
       ICON: '.le_icon_perso',
@@ -183,7 +183,7 @@
       DISCONNECTED: '#000000ff'
     }),
 
-    // Debug
+    // Debug Mode
     DEBUG_MODE: false
   });
 
@@ -201,7 +201,11 @@
     actionCache: new Map(),
     reapplyIntervalId: null,
     reapplyAnimationFrameId: null,
-    lastReapplyTime: 0
+    lastReapplyTime: 0,
+    // État du module CombatDetection
+    combatCheckInterval: null,
+    isInCombat: false,
+    savedSize: null
   });
 
   /**
@@ -226,6 +230,7 @@
   const resetState = () => {
     if (state.reapplyIntervalId) clearInterval(state.reapplyIntervalId);
     if (state.reapplyAnimationFrameId) cancelAnimationFrame(state.reapplyAnimationFrameId);
+    if (state.combatCheckInterval) clearInterval(state.combatCheckInterval);
 
     state.avatarCache?.clear();
     state.avatarUrlCache?.clear();
@@ -634,7 +639,84 @@
      * Récupère le menu des paramètres
      * @returns {HTMLElement|null} - Menu ou null
      */
-    getSettingsMenu: () => document.querySelector(CONFIG.SELECTORS.SETTINGS_MENU)
+    getSettingsMenu: () => document.querySelector(CONFIG.SELECTORS.SETTINGS_MENU),
+
+    /**
+     * Sauvegarde les styles originaux d'un élément
+     * @param {HTMLElement} element - Élément dont sauvegarder les styles
+     */
+    saveOriginalStyles: (element) => {
+      // Ne sauvegarder qu'une seule fois
+      if (element.dataset.pmpStylesSaved === 'true') return;
+
+      // Sauvegarder les styles inline
+      element.dataset.pmpOriginalStyle = element.getAttribute('style') || '';
+
+      // Marquer comme sauvegardé
+      element.dataset.pmpStylesSaved = 'true';
+
+      Utils.debugLog('🔧 Styles originaux sauvegardés pour:', element);
+    },
+
+    /**
+     * Restaure les styles originaux d'un élément
+     * @param {HTMLElement} element - Élément dont restaurer les styles
+     */
+    restoreOriginalStyles: (element) => {
+      // Vérifier si les styles ont été sauvegardés
+      if (element.dataset.pmpStylesSaved !== 'true') {
+        Utils.debugLog('⚠️ Pas de styles sauvegardés pour:', element);
+        return;
+      }
+
+      Utils.debugLog('🔧 Restauration des styles pour:', element);
+      Utils.debugLog('  - Style actuel:', element.getAttribute('style'));
+
+      // Restaurer les styles inline originaux
+      const originalStyle = element.dataset.pmpOriginalStyle;
+      if (originalStyle) {
+        element.setAttribute('style', originalStyle);
+      } else {
+        element.removeAttribute('style');
+      }
+
+      // Supprimer les attributs de sauvegarde
+      delete element.dataset.pmpStylesSaved;
+      delete element.dataset.pmpOriginalStyle;
+
+      Utils.debugLog('  - Style restauré:', element.getAttribute('style'));
+      Utils.debugLog('✅ Styles restaurés');
+    },
+
+    /**
+     * Supprime le style global du <head>
+     * @returns {boolean} - true si supprimé
+     */
+    removeGlobalStyle: () => {
+      const styleElement = document.getElementById('dreadcast-avatar-resize-style');
+      if (styleElement) {
+        styleElement.remove();
+        Utils.debugLog('🔧 Style global supprimé du <head>');
+        return true;
+      }
+      Utils.debugLog('⚠️ Style global non trouvé');
+      return false;
+    },
+
+    /**
+     * Recrée le style global dans le <head>
+     */
+    recreateGlobalStyle: () => {
+      // Vérifier s'il existe déjà
+      if (document.getElementById('dreadcast-avatar-resize-style')) {
+        Utils.debugLog('⚠️ Style global déjà présent');
+        return;
+      }
+
+      // Recréer le style
+      SizingSystem.injectStyles();
+      Utils.debugLog('🔧 Style global recréé');
+    }
   });
 
   // ==========================================================================
@@ -934,7 +1016,7 @@
   });
 
   // ==========================================================================
-  // MODULE DE GESTION DES PIE CHARTS (GROUPES DE PIONS) 
+  // MODULE DE GESTION DES PIE CHARTS (GROUPES DE PIONS)
   // ==========================================================================
 
   /**
@@ -1283,6 +1365,9 @@
         // Créer le pie chart sur le premier .le_icon_perso
         const mainIconElement = iconElements[0];
 
+        // Sauvegarder les styles originaux AVANT modification
+        DOM.saveOriginalStyles(mainIconElement);
+
         // Forcer position pour le centrage
         const computedStyle = window.getComputedStyle(mainIconElement);
         if (computedStyle.position === 'static') {
@@ -1295,6 +1380,8 @@
         // Cacher les autres pions vanilla
         iconElements.forEach((iconEl, idx) => {
           if (idx > 0) {
+            // Sauvegarder les styles originaux AVANT modification
+            DOM.saveOriginalStyles(iconEl);
             iconEl.style.setProperty('display', 'none', 'important');
           }
         });
@@ -1313,48 +1400,69 @@
    * @namespace CombatDetection
    */
   const CombatDetection = Object.freeze({
-    isInCombat: false,
-    savedSize: null,
-    checkInterval: null,
-
     /**
      * Démarre la détection du combat
      */
     start: () => {
-      CombatDetection.checkInterval = setInterval(() => {
+      const intervalId = setInterval(() => {
         const inCombat = DOM.isInCombat();
 
-        if (inCombat && !CombatDetection.isInCombat) {
+        if (inCombat && !state.isInCombat) {
           CombatDetection.onEnterCombat();
-        } else if (!inCombat && CombatDetection.isInCombat) {
+        } else if (!inCombat && state.isInCombat) {
           CombatDetection.onExitCombat();
         }
       }, CONFIG.TIMING.COMBAT_CHECK_INTERVAL);
+
+      updateState({ combatCheckInterval: intervalId });
     },
 
     /**
      * Callback lors de l'entrée en combat
      */
     onEnterCombat: () => {
-      CombatDetection.savedSize = Storage.loadAvatarSize();
-      CombatDetection.isInCombat = true;
+      Utils.debugLog('🚨 ENTRÉE EN COMBAT - Désactivation du script');
+      updateState({ isInCombat: true });
 
-      SizingSystem.applyAvatarSize(100);
-      CombatDetection.disableSlider();
+      // 1. Arrêter le ReapplicationSystem
+      ReapplicationSystem.stop();
+      Utils.debugLog('🔧 ReapplicationSystem arrêté');
+
+      // 2. Restaurer les styles originaux de tous les .le_icon_perso
+      const allIconElements = document.querySelectorAll('.le_icon_perso');
+      Utils.debugLog('🔧 Restauration des styles pour', allIconElements.length, 'éléments .le_icon_perso');
+      allIconElements.forEach(iconEl => {
+        DOM.restoreOriginalStyles(iconEl);
+      });
+
+      // 3. Supprimer le <style> global du <head>
+      DOM.removeGlobalStyle();
+
+      // 4. Supprimer tous les éléments créés par le script
+      DOM.removeAllAvatars();
+
+      Utils.debugLog('✅ Tous les éléments du script ont été supprimés - Interface vanilla restaurée');
     },
 
     /**
      * Callback lors de la sortie du combat
      */
     onExitCombat: () => {
-      CombatDetection.isInCombat = false;
+      Utils.debugLog('✅ SORTIE DE COMBAT - Réactivation du script');
+      updateState({ isInCombat: false });
 
-      if (CombatDetection.savedSize !== null) {
-        SizingSystem.applyAvatarSize(CombatDetection.savedSize);
-      }
+      // 1. Recréer le <style> global dans le <head>
+      DOM.recreateGlobalStyle();
 
-      CombatDetection.enableSlider();
-      CombatDetection.savedSize = null;
+      // 2. Réappliquer tous les avatars
+      Avatar.applyToAll(true);
+      Utils.debugLog('🔧 Avatars réappliqués');
+
+      // 3. Redémarrer le ReapplicationSystem
+      ReapplicationSystem.start();
+      Utils.debugLog('🔧 ReapplicationSystem redémarré');
+
+      Utils.debugLog('✅ Tous les avatars ont été réappliqués');
     },
 
     /**
@@ -1402,9 +1510,9 @@
      * Arrête la détection du combat
      */
     stop: () => {
-      if (CombatDetection.checkInterval) {
-        clearInterval(CombatDetection.checkInterval);
-        CombatDetection.checkInterval = null;
+      if (state.combatCheckInterval) {
+        clearInterval(state.combatCheckInterval);
+        updateState({ combatCheckInterval: null });
       }
     }
   });
@@ -1567,6 +1675,14 @@
      * @param {number} size - Taille des emojis en px
      */
     applyEmojiSize: (size) => {
+      const currentAvatarSize = Storage.loadAvatarSize();
+      SizingSystem.applyAvatarSize(currentAvatarSize);
+    },
+
+    /**
+     * Injecte les styles globaux dans le <head>
+     */
+    injectStyles: () => {
       const currentAvatarSize = Storage.loadAvatarSize();
       SizingSystem.applyAvatarSize(currentAvatarSize);
     }
@@ -1748,7 +1864,7 @@
       <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 20px 24px !important; border-bottom: 1px solid #3a3a3a !important; cursor: move !important; user-select: none !important;" class="pmp-header-drag">
         <div>
           <span style="margin: 0 !important; font-size: 20px !important; font-weight: 600 !important;">⚙️ PimpMyPion</span>
-          <span style="margin-left: 8px !important; padding: 4px 8px !important; background: #2a2a2a !important; border-radius: 6px !important; font-size: 12px !important; font-weight: 500 !important; color: #a0a0a0 !important;">v 0.5.4</span>
+          <span style="margin-left: 8px !important; padding: 4px 8px !important; background: #2a2a2a !important; border-radius: 6px !important; font-size: 12px !important; font-weight: 500 !important; color: #a0a0a0 !important;">v 0.5.5</span>
         </div>
         <button id="avatar-close-btn" style="width: 32px !important; height: 32px !important; padding: 0 !important; background: transparent !important; border: none !important; border-radius: 6px !important; font-size: 20px !important; color: #a0a0a0 !important; cursor: pointer !important; transition: all 0.2s ease !important;">✕</button>
       </div>
@@ -2066,7 +2182,7 @@
           const menuOption = document.createElement('li');
           menuOption.id = 'avatar-resize-menu-option';
           menuOption.className = 'link couleur2';
-          menuOption.textContent = '🎀 PmP v0.5.4';
+          menuOption.textContent = '🎀 PmP v0.5.5';
           menuOption.style.cursor = 'pointer';
 
           menuOption.addEventListener('click', (e) => {
@@ -2103,7 +2219,7 @@
      * Initialise l'application
      */
     init: async () => {
-      Utils.debugLog('🚀 Initialisation de PimpMyPion v0.5.4');
+      Utils.debugLog('🚀 Initialisation de PimpMyPion v0.5.5');
 
       // Appliquer la taille initiale des avatars
       const savedSize = Storage.loadAvatarSize();
@@ -2126,7 +2242,7 @@
       await new Promise(resolve => setTimeout(resolve, CONFIG.TIMING.SECONDARY_DELAY));
       await Avatar.applyToAll(false);
 
-      Utils.debugLog('--> PimpMyPion v0.5.4 prêt !');
+      Utils.debugLog('--> PimpMyPion v0.5.5 prêt !');
     }
   });
 
