@@ -482,7 +482,7 @@
       Storage.save(CONFIG.STORAGE_KEYS.COLOR_OPACITY, String(opacity)),
 
     // /**
-    //  * Récupère la couleur pour une action avec opacité ()
+    //  * Récupère la couleur pour une action avec opacité () // OBSOLETE
     //  * @param {string} action - Nom de l'action
     //  * @returns {string} - Couleur rgba
     //  */
