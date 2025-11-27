@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Dreadcast - PimpMyPion - Testing v 0.6.0
+// @name         Dreadcast - PimpMyPion - Testing v 0.6.1
 // @namespace    http://tampermonkey.net/
 // @version      0.6.1
 // @description  Remplace les pions bleus par les avatars des joueurs et ajoute des paramètres de personnalisation
@@ -19,7 +19,7 @@
   // CONFIGURATION & CONSTANTES
   // ==========================================================================
 
-  const VERSION = "0.6.0";
+  const VERSION = "0.6.1";
 
   /**
    * Configuration globale de l'application
