@@ -1890,7 +1890,7 @@
               </div>
               <label style="position: relative !important; display: inline-block !important; width: 48px !important; height: 28px !important; cursor: pointer !important;">
                 <input type="checkbox" id="avatar-enabled-checkbox" checked style="opacity: 0 !important; width: 0 !important; height: 0 !important;">
-                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333 !important; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
+                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
               </label>
             </div>
 
@@ -1904,7 +1904,7 @@
               </div>
               <label style="position: relative !important; display: inline-block !important; width: 48px !important; height: 28px !important; cursor: pointer !important;">
                 <input type="checkbox" id="emoji-enabled-checkbox" checked style="opacity: 0 !important; width: 0 !important; height: 0 !important;">
-                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333 !important; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
+                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
               </label>
             </div>
 
