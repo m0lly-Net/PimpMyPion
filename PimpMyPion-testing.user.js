@@ -155,7 +155,7 @@
       // 'noaction': '⏸️',
       'repos': '😴',
       'recherche': '🧐',
-      'cacher': '🫣',
+      'cacher': '',
       'scruter': '👀',
       'soin': '💊',
       'travail': '⚙️',
