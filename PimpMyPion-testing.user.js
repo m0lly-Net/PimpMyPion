@@ -154,7 +154,7 @@
       // 'aucune': '⏸️',
       // 'noaction': '⏸️',
       'repos': '😴',
-      'recherche': '⛏️',
+      'recherche': '🧐',
       'cacher': '🫣',
       'scruter': '👀',
       'soin': '💊',
