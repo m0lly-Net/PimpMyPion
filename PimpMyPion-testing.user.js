@@ -40,7 +40,7 @@
     SIZE: Object.freeze({
       DEFAULT: 100,
       MIN: 75,
-      MAX: 125
+      MAX: 150
     }),
 
     // Paramètrage de la taille des emojis d'action (px)
@@ -1969,7 +1969,7 @@
                 </div>
               </div>
               <div style="display: flex !important; align-items: center !important; gap: 12px !important; min-width: 180px !important;">
-                <input type="range" id="avatar-size-slider" min="75" max="125" value="100" class="pmp-slider" style="flex: 1 !important; height: 6px !important; background: #333333 !important; border-radius: 3px !important; outline: none !important; -webkit-appearance: none !important; cursor: pointer !important;">
+                <input type="range" id="avatar-size-slider" min="${CONFIG.SIZE.MIN}" max="${CONFIG.SIZE.MAX}" value="100" class="pmp-slider" style="flex: 1 !important; height: 6px !important; background: #333333 !important; border-radius: 3px !important; outline: none !important; -webkit-appearance: none !important; cursor: pointer !important;">
                 <span id="avatar-size-value" style="min-width: 50px !important; text-align: right !important; font-size: 14px !important; font-weight: 500 !important;">100%</span>
               </div>
             </div>
