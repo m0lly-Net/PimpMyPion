@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Dreadcast - PimpMyPion - Testing v 0.5.7
+// @name         Dreadcast - PimpMyPion - Testing v 0.6.0
 // @namespace    http://tampermonkey.net/
-// @version      0.5.7
+// @version      0.6.0
 // @description  Remplace les pions bleus par les avatars des joueurs et ajoute des paramètres de personnalisation
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -19,7 +19,7 @@
   // CONFIGURATION & CONSTANTES
   // ==========================================================================
 
-  const VERSION = "0.5.7";
+  const VERSION = "0.6.0";
 
   /**
    * Configuration globale de l'application
@@ -187,8 +187,15 @@
       DISCONNECTED: '#000000ff'
     }),
 
+    // Configuration mode furtif
+    STEALTH: Object.freeze({
+      BLUR_AMOUNT: 5,
+      ENABLE_BLUR: true,
+      HOVER_BLUR_AMOUNT: 2
+    }),
+
     // Debug Mode
-    DEBUG_MODE: false
+    DEBUG_MODE: true
   });
 
   // ==========================================================================
@@ -203,6 +210,7 @@
     avatarCache: new Map(),
     avatarUrlCache: new Map(),
     actionCache: new Map(),
+    previousStealthStates: new Map(),
     reapplyIntervalId: null,
     reapplyAnimationFrameId: null,
     lastReapplyTime: 0,
@@ -239,6 +247,8 @@
     state.avatarCache?.clear();
     state.avatarUrlCache?.clear();
     state.actionCache?.clear();
+    state.previousStealthStates?.clear();
+    Utils.debugLog('🧹 États furtifs nettoyés');
 
     state = createInitialState();
     return state;
@@ -811,6 +821,35 @@
 
       const isConnected = iconElement.classList.contains(CONFIG.CLASSES.CONNECTED);
       return Storage.getColorForStatus(isConnected);
+    },
+
+    /**
+     * Détecte si un joueur est en mode furtif
+     * @param {string} playerName - Nom du joueur
+     * @returns {boolean} - true si en mode furtif
+     */
+    detectStealthMode: (playerName) => {
+      try {
+        // Trouver l'élément du pion dans le DOM
+        const pionElement = document.querySelector(`[data-player-name="${playerName}"]`);
+        
+        if (!pionElement) return false;
+
+        const iconElement = DOM.getIconElement(pionElement);
+        if (!iconElement) return false;
+
+        // Chercher indicateurs de mode furtif dans les classes d'action
+        const stealthIndicators = ['cacher', 'stealth', 'furtif', 'discrétion'];
+        
+        const hasStealthClass = stealthIndicators.some(indicator => 
+          iconElement.classList.contains(indicator)
+        );
+
+        return hasStealthClass;
+      } catch (error) {
+        Utils.debugLog('❌ Erreur détection furtif:', error);
+        return false;
+      }
     }
   });
 
@@ -850,6 +889,25 @@
       });
     }
   });
+
+  // ==========================================================================
+  // FONCTIONS HELPER POUR LE MODE FURTIF
+  // ==========================================================================
+
+  /**
+   * Applique le flou sur un avatar si l'état de furtivité a changé
+   * @param {string} playerName - Nom du joueur
+   * @param {boolean} isStealth - true si en mode furtif
+   */
+  const applyStealthBlurIfChanged = (playerName, isStealth) => {
+    const previousState = state.previousStealthStates.get(playerName);
+    
+    if (isStealth !== previousState) {
+      Avatar.applyStealthBlur(playerName, isStealth);
+      state.previousStealthStates.set(playerName, isStealth);
+      Utils.debugLog('🥷 État furtif changé:', playerName, isStealth ? 'FURTIF' : 'VISIBLE');
+    }
+  };
 
   // ==========================================================================
   // MODULE DE GESTION DES AVATARS
@@ -943,6 +1001,10 @@
         ActionDetection.updateActionEmoji(iconElement, action);
         pionElement.setAttribute(CONFIG.ATTRIBUTES.CURRENT_ACTION, action || '');
       }
+
+      // Vérifier et appliquer le mode furtif
+      const isStealth = ActionDetection.detectStealthMode(playerName);
+      applyStealthBlurIfChanged(playerName, isStealth);
     },
 
     /**
@@ -956,6 +1018,42 @@
       if (avatarImg) {
         const borderColor = ActionDetection.getBorderColor(pionElement);
         avatarImg.style.setProperty('border', `2px solid ${borderColor}`, 'important');
+        
+        // Vérifier et appliquer le mode furtif
+        const playerName = DOM.getPlayerName(pionElement);
+        if (playerName) {
+          const isStealth = ActionDetection.detectStealthMode(playerName);
+          applyStealthBlurIfChanged(playerName, isStealth);
+        }
+      }
+    },
+
+    /**
+     * Applique ou retire le flou sur un avatar en mode furtif
+     * @param {string} playerName - Nom du joueur
+     * @param {boolean} isStealth - true si en mode furtif
+     */
+    applyStealthBlur: (playerName, isStealth) => {
+      try {
+        if (!CONFIG.STEALTH.ENABLE_BLUR) return;
+
+        const pionElement = document.querySelector(`[data-player-name="${playerName}"]`);
+        if (!pionElement) return;
+
+        const iconElement = DOM.getIconElement(pionElement);
+        const avatarImg = iconElement?.querySelector(`.${CONFIG.CLASSES.AVATAR_IMG}`);
+        
+        if (!avatarImg) return;
+        
+        if (isStealth) {
+          avatarImg.classList.add('pmp-avatar-blur');
+          Utils.debugLog('🥷 Flou appliqué:', playerName);
+        } else {
+          avatarImg.classList.remove('pmp-avatar-blur');
+          Utils.debugLog('👁️ Flou retiré:', playerName);
+        }
+      } catch (error) {
+        Utils.debugLog('❌ Erreur application flou:', error);
       }
     },
 
@@ -1670,6 +1768,18 @@
           pointer-events: none !important;
           border: 2px solid rgba(0, 0, 0, 0.1) !important;
           transition: opacity 0.2s ease !important;
+        }
+
+        /* Mode furtif - Flou de l'avatar */
+        .pmp-avatar-blur {
+          filter: blur(${CONFIG.STEALTH.BLUR_AMOUNT}px) !important;
+          -webkit-filter: blur(${CONFIG.STEALTH.BLUR_AMOUNT}px) !important;
+          transition: filter 0.3s ease !important;
+        }
+
+        .pmp-avatar-blur:hover {
+          filter: blur(${CONFIG.STEALTH.HOVER_BLUR_AMOUNT}px) !important;
+          -webkit-filter: blur(${CONFIG.STEALTH.HOVER_BLUR_AMOUNT}px) !important;
         }
       `;
     },
