@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Dreadcast - PimpMyPion - Public v 0.5.5
+// @name         Dreadcast - PimpMyPion - Public v 0.5.6
 // @namespace    http://tampermonkey.net/
-// @version      0.5.5
+// @version      0.5.6
 // @description  Remplace les pions bleus par les avatars des joueurs et ajoute des paramètres de personnalisation
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -149,8 +149,8 @@
     ACTION_EMOJIS: Object.freeze({
       'en_combat': '⚔️',
       'encombat': '⚔️',
-      'aucune': '⏸️',
-      'noaction': '⏸️',
+      // 'aucune': '⏸️',
+      // 'noaction': '⏸️',
       'repos': '😴',
       'recherche': '⛏️',
       'cacher': '🫣',
@@ -159,7 +159,8 @@
       'travail': '⚙️',
       'ko': '💀',
       'destruction': '💥',
-      'reparation': '🔧'
+      'reparation': '🔧',
+      'deplacement': '🗺️'
     }),
 
     // Classes des action à détecter
@@ -174,7 +175,8 @@
       'destruction',
       'reparation',
       'aucune', 'noaction',
-      'ko'
+      'ko',
+      'deplacement'
     ]),
 
     // Couleurs par défaut
@@ -1864,7 +1866,7 @@
       <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 20px 24px !important; border-bottom: 1px solid #3a3a3a !important; cursor: move !important; user-select: none !important;" class="pmp-header-drag">
         <div>
           <span style="margin: 0 !important; font-size: 20px !important; font-weight: 600 !important;">⚙️ PimpMyPion</span>
-          <span style="margin-left: 8px !important; padding: 4px 8px !important; background: #2a2a2a !important; border-radius: 6px !important; font-size: 12px !important; font-weight: 500 !important; color: #a0a0a0 !important;">v 0.5.5</span>
+          <span style="margin-left: 8px !important; padding: 4px 8px !important; background: #2a2a2a !important; border-radius: 6px !important; font-size: 12px !important; font-weight: 500 !important; color: #a0a0a0 !important;">v 0.5.6</span>
         </div>
         <button id="avatar-close-btn" style="width: 32px !important; height: 32px !important; padding: 0 !important; background: transparent !important; border: none !important; border-radius: 6px !important; font-size: 20px !important; color: #a0a0a0 !important; cursor: pointer !important; transition: all 0.2s ease !important;">✕</button>
       </div>
@@ -2182,7 +2184,7 @@
           const menuOption = document.createElement('li');
           menuOption.id = 'avatar-resize-menu-option';
           menuOption.className = 'link couleur2';
-          menuOption.textContent = '🎀 PmP v0.5.5';
+          menuOption.textContent = '🎀 PmP v0.5.6';
           menuOption.style.cursor = 'pointer';
 
           menuOption.addEventListener('click', (e) => {
@@ -2219,7 +2221,7 @@
      * Initialise l'application
      */
     init: async () => {
-      Utils.debugLog('🚀 Initialisation de PimpMyPion v0.5.5');
+      Utils.debugLog('🚀 Initialisation de PimpMyPion v0.5.6');
 
       // Appliquer la taille initiale des avatars
       const savedSize = Storage.loadAvatarSize();
@@ -2242,7 +2244,7 @@
       await new Promise(resolve => setTimeout(resolve, CONFIG.TIMING.SECONDARY_DELAY));
       await Avatar.applyToAll(false);
 
-      Utils.debugLog('--> PimpMyPion v0.5.5 prêt !');
+      Utils.debugLog('--> PimpMyPion v0.5.6 prêt !');
     }
   });
 
