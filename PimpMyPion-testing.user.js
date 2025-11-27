@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Dreadcast - PimpMyPion - Testing v 0.6.1
+// @name         Dreadcast - PimpMyPion - Testing
 // @namespace    http://tampermonkey.net/
-// @version      0.6.1
+// @version      0.6.0
 // @description  Remplace les pions bleus par les avatars des joueurs et ajoute des paramètres de personnalisation
 // @author       Darlene
 // @match        https://www.dreadcast.net/*
@@ -19,7 +19,7 @@
   // CONFIGURATION & CONSTANTES
   // ==========================================================================
 
-  const VERSION = "0.6.1";
+  const VERSION = "0.6.0";
 
   /**
    * Configuration globale de l'application
@@ -154,8 +154,8 @@
       // 'aucune': '⏸️',
       // 'noaction': '⏸️',
       'repos': '😴',
-      'recherche': '🧐',
-      'cacher': '',
+      'recherche': '⛏️',
+      'cacher': '🫣',
       'scruter': '👀',
       'soin': '💊',
       'travail': '⚙️',
@@ -832,22 +832,36 @@
       try {
         // Trouver l'élément du pion dans le DOM
         const pionElement = document.querySelector(`[data-player-name="${playerName}"]`);
-        
-        if (!pionElement) return false;
+
+        if (!pionElement) {
+          Utils.debugLog('🔍 Pion non trouvé pour détection furtif:', playerName);
+          return false;
+        }
 
         const iconElement = DOM.getIconElement(pionElement);
-        if (!iconElement) return false;
+        if (!iconElement) {
+          Utils.debugLog('🔍 IconElement non trouvé pour:', playerName);
+          return false;
+        }
 
         // Chercher indicateurs de mode furtif dans les classes d'action
         const stealthIndicators = ['cacher', 'stealth', 'furtif', 'discrétion'];
-        
-        const hasStealthClass = stealthIndicators.some(indicator => 
+
+        const hasStealthClass = stealthIndicators.some(indicator =>
           iconElement.classList.contains(indicator)
         );
 
+        // Log des classes pour diagnostic
+        if (hasStealthClass) {
+          const foundIndicators = stealthIndicators.filter(indicator =>
+            iconElement.classList.contains(indicator)
+          );
+          Utils.debugLog('🔍 Mode furtif détecté:', playerName, 'Classes:', foundIndicators.join(', '));
+        }
+
         return hasStealthClass;
       } catch (error) {
-        Utils.debugLog('❌ Erreur détection furtif:', error);
+        Utils.debugLog('❌ Erreur détection furtif:', playerName, error);
         return false;
       }
     }
@@ -895,15 +909,19 @@
   // ==========================================================================
 
   /**
-   * Applique le flou sur un avatar si l'état de furtivité a changé
+   * Applique le flou sur un avatar (TOUJOURS) et log si l'état a changé
    * @param {string} playerName - Nom du joueur
    * @param {boolean} isStealth - true si en mode furtif
    */
   const applyStealthBlurIfChanged = (playerName, isStealth) => {
     const previousState = state.previousStealthStates.get(playerName);
-    
+
+    // TOUJOURS appliquer le flou, même si l'état n'a pas changé
+    // Cela garantit que le flou est maintenu même si l'avatar est recréé
+    Avatar.applyStealthBlur(playerName, isStealth);
+
+    // Logger uniquement si l'état a changé
     if (isStealth !== previousState) {
-      Avatar.applyStealthBlur(playerName, isStealth);
       state.previousStealthStates.set(playerName, isStealth);
       Utils.debugLog('🥷 État furtif changé:', playerName, isStealth ? 'FURTIF' : 'VISIBLE');
     }
@@ -1018,7 +1036,7 @@
       if (avatarImg) {
         const borderColor = ActionDetection.getBorderColor(pionElement);
         avatarImg.style.setProperty('border', `2px solid ${borderColor}`, 'important');
-        
+
         // Vérifier et appliquer le mode furtif
         const playerName = DOM.getPlayerName(pionElement);
         if (playerName) {
@@ -1035,25 +1053,42 @@
      */
     applyStealthBlur: (playerName, isStealth) => {
       try {
-        if (!CONFIG.STEALTH.ENABLE_BLUR) return;
+        if (!CONFIG.STEALTH.ENABLE_BLUR) {
+          Utils.debugLog('🔧 Flou désactivé dans CONFIG');
+          return;
+        }
 
         const pionElement = document.querySelector(`[data-player-name="${playerName}"]`);
-        if (!pionElement) return;
+        if (!pionElement) {
+          Utils.debugLog('⚠️ Pion non trouvé pour:', playerName);
+          return;
+        }
 
         const iconElement = DOM.getIconElement(pionElement);
         const avatarImg = iconElement?.querySelector(`.${CONFIG.CLASSES.AVATAR_IMG}`);
-        
-        if (!avatarImg) return;
-        
+
+        if (!avatarImg) {
+          Utils.debugLog('⚠️ Avatar non trouvé pour:', playerName);
+          return;
+        }
+
+        const hadBlurBefore = avatarImg.classList.contains('pmp-avatar-blur');
+
         if (isStealth) {
           avatarImg.classList.add('pmp-avatar-blur');
-          Utils.debugLog('🥷 Flou appliqué:', playerName);
+          if (!hadBlurBefore) {
+            Utils.debugLog('🥷 Flou appliqué:', playerName);
+          } else {
+            Utils.debugLog('🔄 Flou maintenu:', playerName);
+          }
         } else {
           avatarImg.classList.remove('pmp-avatar-blur');
-          Utils.debugLog('👁️ Flou retiré:', playerName);
+          if (hadBlurBefore) {
+            Utils.debugLog('👁️ Flou retiré:', playerName);
+          }
         }
       } catch (error) {
-        Utils.debugLog('❌ Erreur application flou:', error);
+        Utils.debugLog('❌ Erreur application flou:', playerName, error);
       }
     },
 
@@ -2000,7 +2035,7 @@
               </div>
               <label style="position: relative !important; display: inline-block !important; width: 48px !important; height: 28px !important; cursor: pointer !important;">
                 <input type="checkbox" id="avatar-enabled-checkbox" checked style="opacity: 0 !important; width: 0 !important; height: 0 !important;">
-                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
+                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333 !important; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
               </label>
             </div>
 
@@ -2014,7 +2049,7 @@
               </div>
               <label style="position: relative !important; display: inline-block !important; width: 48px !important; height: 28px !important; cursor: pointer !important;">
                 <input type="checkbox" id="emoji-enabled-checkbox" checked style="opacity: 0 !important; width: 0 !important; height: 0 !important;">
-                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
+                <span class="pmp-toggle-slider" style="position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; background: #333333 !important; border-radius: 14px !important; transition: all 0.3s ease !important;"></span>
               </label>
             </div>
 
