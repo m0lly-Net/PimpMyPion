@@ -50,7 +50,7 @@
       MAX_SIZE: 28
     }),
 
-    // Paramètrage de l'opacité (%)
+    // Paramètrage de l'opacité des avatars(%)
     OPACITY: Object.freeze({
       DEFAULT: 100,
       MIN: 0,
@@ -188,7 +188,7 @@
     }),
 
     // Debug Mode
-    DEBUG_MODE: false
+    DEBUG_MODE: true
   });
 
   // ==========================================================================
@@ -955,7 +955,7 @@
 
       if (avatarImg) {
         const borderColor = ActionDetection.getBorderColor(pionElement);
-        avatarImg.style.setProperty('border', `3px solid ${borderColor}`, 'important');
+        avatarImg.style.setProperty('border', `2px solid ${borderColor}`, 'important');
       }
     },
 
